@@ -1,6 +1,7 @@
 package com.shorterurl.authservice.controller;
 
 import com.shorterurl.authservice.model.User;
+import com.shorterurl.authservice.security.JwtTokenProvider;
 import com.shorterurl.authservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
