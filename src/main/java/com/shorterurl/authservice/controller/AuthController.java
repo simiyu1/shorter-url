@@ -44,14 +44,6 @@ public class AuthController {
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    // @PostMapping("/login")
-    // public ResponseEntity<?> login(@RequestBody User user) {
-    //     Authentication authentication = authenticationManager.authenticate(
-    //             new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-    //     SecurityContextHolder.getContext().setAuthentication(authentication);
-    //     String jwt = tokenProvider.generateToken(authentication);
-    //     return ResponseEntity.ok("Bearer " + jwt);
-    // }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
@@ -59,9 +51,9 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
-            return ResponseEntity.ok("Bearer " + jwt);
+            AuthResponse authResponse = new AuthResponse(jwt);
+            return ResponseEntity.ok(authResponse);
         } catch (org.springframework.security.core.AuthenticationException e) {
-            System.out.println(e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
         }
     }
