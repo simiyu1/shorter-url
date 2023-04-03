@@ -3,6 +3,9 @@ package com.shorterurl.authservice.model;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.beans.factory.annotation.Value;
+
 @Document(collection = "roles")
 public class Role {
 
@@ -14,6 +17,11 @@ public class Role {
     public enum RoleName {
         ROLE_ADMIN,
         ROLE_USER
+    }
+
+    @PersistenceConstructor
+    public Role(@Value("#root.roleName") RoleName roleName) {
+        this.name = roleName;
     }
 
     public String getId() {

@@ -4,6 +4,10 @@ import com.shorterurl.authservice.security.CustomUserDetailsService;
 import com.shorterurl.authservice.security.JwtAuthenticationFilter;
 import com.shorterurl.authservice.security.JwtAuthorizationFilter;
 
+import io.netty.handler.codec.http.HttpMethod;
+
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,11 +20,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
 
@@ -54,32 +60,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests((authz) -> authz
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers(new AntPathRequestMatcher("/api/auth/register"), 
+                                 new AntPathRequestMatcher("/api/auth/login")).permitAll()
                 .anyRequest().authenticated()
             )
-            .httpBasic(withDefaults());
+            .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .cors().and()
+            .csrf().disable();
         return http.build();
     }
 
-    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    //     http
-    //             .authorizeHttpRequests((authz) -> authz
-    //                             .requestMatchers("/api/auth/**").permitAll()
-    //                             .anyRequest().authenticated()
-    //             )
-    //             .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
-    //             .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-    //             .cors(withDefaults())
-    //             .csrf(withDefaults());
-    //     return http.build();
-    // }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> {
-            // Add any URL patterns you want to ignore here
-            web.ignoring().requestMatchers("/ignore1", "/ignore2");
-        };
-    }
 }
 
