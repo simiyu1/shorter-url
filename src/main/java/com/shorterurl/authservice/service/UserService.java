@@ -6,6 +6,7 @@ import com.shorterurl.authservice.model.Role.RoleName;
 import com.shorterurl.authservice.repository.RoleRepository;
 import com.shorterurl.authservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.shorterurl.authservice.model.UserRegistrationResponse;
@@ -66,6 +67,16 @@ public class UserService {
         user.setRoles(Collections.singleton(userRole));
         User savedUser = userRepository.save(user);
         return new UserRegistrationResponse(true, "User registration successful.", savedUser);
+    }
+
+    public User findByUsername(String username) {
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+
+        if (!optionalUser.isPresent()) {
+            throw new UsernameNotFoundException("User not found with username: " + username);
+        }
+
+        return optionalUser.get();
     }
 
     
