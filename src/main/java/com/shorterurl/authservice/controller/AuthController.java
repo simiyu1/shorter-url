@@ -7,6 +7,8 @@ import com.shorterurl.authservice.service.UserService;
 import com.shorterurl.authservice.model.Role;
 import com.shorterurl.authservice.service.RoleService;
 
+import java.util.Collection;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +31,7 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
 
     @Autowired
     private RoleService roleService;
@@ -51,7 +55,16 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
-            AuthResponse authResponse = new AuthResponse(jwt);
+    
+            // Fetch the user object with roles
+            User loggedInUser = userService.findByUsername(user.getUsername());
+    
+            // Get the user's roles
+            Set<Role> roles = loggedInUser.getRoles();
+    
+            // Include the user's roles in the AuthResponse object
+            AuthResponse authResponse = new AuthResponse(jwt, roles);
+    
             return ResponseEntity.ok(authResponse);
         } catch (org.springframework.security.core.AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
